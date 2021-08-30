@@ -5,7 +5,8 @@ from tqdm import tqdm
 from time import sleep
 import pickle
 
-class ImageNetClassPicker: 
+
+class ImageNetClassPicker:
     def __init__(self):
         self.image_classes = {}
         self.lyrics = []
@@ -16,9 +17,10 @@ class ImageNetClassPicker:
         with open(filename) as file:
             while (line := file.readline().rstrip()):
                 num = line.split(':', 1)[0]
-                classes = line.split(':', 1)[-1].replace(',', '').replace("'", '')
+                classes = line.split(
+                    ':', 1)[-1].replace(',', '').replace("'", '')
                 self.image_classes[num] = classes
-    
+
     def load_song_lyrics(self, filename):
         with open(filename) as file:
             while (line := file.readline().rstrip()):
@@ -35,35 +37,46 @@ class ImageNetClassPicker:
     def get_classes_from_semantic_similarity(self, max_classes_per_lyric):
         class_indexes = []
 
-        print("Getting %s Classes From Semantic Similarity" % len(self.lyrics) * max_classes_per_lyric)
+        print("Getting %s Classes From Semantic Similarity" %
+              len(self.lyrics) * max_classes_per_lyric)
 
         for lyric in tqdm(self.lyrics):
             cosine_scores_list = []
 
             for key in self.image_classes:
-                embedding1 = self.sent_trans_model.encode(self.image_classes[key], convert_to_tensor=True)
-                embedding2 = self.sent_trans_model.encode(lyric, convert_to_tensor=True)
-                cosine_scores_list.append((key, util.pytorch_cos_sim(embedding1, embedding2).item()))
+                embedding1 = self.sent_trans_model.encode(
+                    self.image_classes[key], convert_to_tensor=True)
+                embedding2 = self.sent_trans_model.encode(
+                    lyric, convert_to_tensor=True)
+                cosine_scores_list.append(
+                    (key, util.pytorch_cos_sim(embedding1, embedding2).item()))
 
-            temp_cosine_scores_list_sorted = sorted(cosine_scores_list, key=lambda x: float(x[1]), reverse=True)
-            class_indexes += [x[0] for x in temp_cosine_scores_list_sorted[:max_classes_per_lyric]]
+            temp_cosine_scores_list_sorted = sorted(
+                cosine_scores_list, key=lambda x: float(x[1]), reverse=True)
+            class_indexes += temp_cosine_scores_list_sorted[:max_classes_per_lyric]
 
         return class_indexes
 
-    def get_classes_from_sentiment_analysis(self, max_classes):
-        sentiment_score = self.sentiment_analyser.polarity_scores(self.load_song_lyrics)
+    def get_classes_from_sentiment_analysis(self):
+        lyric_sentiment = self.sentiment_anallysis_helper(
+            ' '.join(self.lyrics))
 
-        if sentiment_score['compound'] >= 0.05:
-            sentiment_percentage = sentiment_score['compound']
+        common_sentiment_list = []
+        for key in self.image_classes:
+            class_sentiment = self.sentiment_anallysis_helper(
+                self.image_classes[key])
+
+            if (class_sentiment == lyric_sentiment):
+                common_sentiment_list.append(key)
+
+        return common_sentiment_list
+
+    def sentiment_anallysis_helper(self, text):
+        sentiment_score = self.sentiment_analyser.polarity_scores(text)
+
+        if sentiment_score['compound'] >= 0:
             sentiment = 'Positive'
-        elif sentiment_score['compound'] > -0.05 and sentiment_score['compound'] < 0.05:
-            sentiment_percentage = sentiment_score['compound']
-            sentiment = 'Neutral'
-        elif sentiment_score['compound'] <= -0.05:
-            sentiment_percentage = sentiment_score['compound']
+        elif sentiment_score['compound'] <= 0:
             sentiment = 'Negative'
 
-        sentiment
-        abs(sentiment_percentage) * 100
-
-        return []
+        return sentiment
