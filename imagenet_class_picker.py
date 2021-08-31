@@ -1,8 +1,6 @@
 from sentence_transformers import SentenceTransformer, util
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
-import numpy as np
 from tqdm import tqdm
-from time import sleep
 import pickle
 
 
@@ -15,16 +13,17 @@ class ImageNetClassPicker:
 
     def load_imagenet_class_labels(self, filename):
         with open(filename) as file:
-            while (line := file.readline().rstrip()):
-                num = line.split(':', 1)[0]
-                classes = line.split(
+            for line in file:
+                num = line.rstrip().split(':', 1)[0]
+                classes = line.rstrip().split(
                     ':', 1)[-1].replace(',', '').replace("'", '')
                 self.image_classes[num] = classes
 
     def load_song_lyrics(self, filename):
         with open(filename) as file:
-            while (line := file.readline().rstrip()):
-                self.lyrics.append(line.replace(',', '').replace("'", ''))
+            for line in file:
+                self.lyrics.append(line.rstrip().replace(
+                    ',', '').replace("'", ''))
 
     def save_list(self, filename, list_to_save):
         with open(filename, "wb") as file:
@@ -34,11 +33,12 @@ class ImageNetClassPicker:
         with open(filename, "rb") as file:
             return pickle.load(file)
 
-    def get_classes_from_semantic_similarity(self, max_classes_per_lyric):
+    def get_classes_from_semantic_similarity(self, max_classes_per_lyric=1, max_classes=12):
         class_indexes = []
+        final_class_indexes_set = set()
 
-        print("Getting %s Classes From Semantic Similarity" %
-              len(self.lyrics) * max_classes_per_lyric)
+        print("Getting {} Classes From Semantic Similarity\n".format(
+            len(self.lyrics) * max_classes_per_lyric))
 
         for lyric in tqdm(self.lyrics):
             cosine_scores_list = []
@@ -51,13 +51,20 @@ class ImageNetClassPicker:
                 cosine_scores_list.append(
                     (key, util.pytorch_cos_sim(embedding1, embedding2).item()))
 
-            temp_cosine_scores_list_sorted = sorted(
-                cosine_scores_list, key=lambda x: float(x[1]), reverse=True)
-            class_indexes += temp_cosine_scores_list_sorted[:max_classes_per_lyric]
+            class_indexes += cosine_scores_list[:max_classes_per_lyric]
 
-        return class_indexes
+        class_indexes_sorted = sorted(
+            class_indexes, key=lambda x: float(x[1]), reverse=True)
 
-    def get_classes_from_sentiment_analysis(self):
+        for pair in class_indexes_sorted:
+            final_class_indexes_set.add(pair[0])
+
+            if (len(final_class_indexes_set) == max_classes):
+                break
+
+        return list(final_class_indexes_set)
+
+    def get_classes_from_sentiment_analysis(self, max_classes=12):
         lyric_sentiment = self.sentiment_anallysis_helper(
             ' '.join(self.lyrics))
 
@@ -76,7 +83,7 @@ class ImageNetClassPicker:
 
         if sentiment_score['compound'] >= 0:
             sentiment = 'Positive'
-        elif sentiment_score['compound'] <= 0:
+        elif sentiment_score['compound'] < 0:
             sentiment = 'Negative'
 
         return sentiment
