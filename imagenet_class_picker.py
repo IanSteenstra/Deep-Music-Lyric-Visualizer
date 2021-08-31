@@ -37,34 +37,30 @@ class ImageNetClassPicker:
         class_indexes = []
         final_class_indexes_set = set()
 
-        print("Getting {} Classes From Semantic Similarity\n".format(
-            len(self.lyrics) * max_classes_per_lyric))
+        print("Getting {} Classes From Semantic Similarity\n".format(max_classes))
 
         for lyric in tqdm(self.lyrics):
-            cosine_scores_list = []
-
             for key in self.image_classes:
                 embedding1 = self.sent_trans_model.encode(
                     self.image_classes[key], convert_to_tensor=True)
                 embedding2 = self.sent_trans_model.encode(
                     lyric, convert_to_tensor=True)
-                cosine_scores_list.append(
+                class_indexes.append(
                     (key, util.pytorch_cos_sim(embedding1, embedding2).item()))
-
-            class_indexes += cosine_scores_list[:max_classes_per_lyric]
+            print(class_indexes)
 
         class_indexes_sorted = sorted(
             class_indexes, key=lambda x: float(x[1]), reverse=True)
 
         for pair in class_indexes_sorted:
-            final_class_indexes_set.add(pair[0])
+            final_class_indexes_set.add(int(pair[0]))
 
             if (len(final_class_indexes_set) == max_classes):
                 break
 
         return list(final_class_indexes_set)
 
-    def get_classes_from_sentiment_analysis(self, max_classes=12):
+    def get_classes_from_sentiment_analysis(self):
         lyric_sentiment = self.sentiment_anallysis_helper(
             ' '.join(self.lyrics))
 
@@ -74,7 +70,7 @@ class ImageNetClassPicker:
                 self.image_classes[key])
 
             if (class_sentiment == lyric_sentiment):
-                common_sentiment_list.append(key)
+                common_sentiment_list.append(int(key))
 
         return common_sentiment_list
 

@@ -23,6 +23,7 @@ parser.add_argument("--class_picker", type=int, default=1)
 parser.add_argument("--image_net_classes_file",
                     default="imagenet1000_clsidx_to_labels.txt")
 parser.add_argument("--lyrics_file", default="lyrics.txt")
+parser.add_argument("--class_list_file", default="class_list_file.txt")
 parser.add_argument("--classes_per_lyric_line", type=int, default=1)
 parser.add_argument("--sort_classes_by_power", type=int, default=0)
 parser.add_argument("--jitter", type=float, default=0.5)
@@ -74,6 +75,9 @@ class_picker = args.class_picker
 
 # set the lyrics file name
 lyrics_file = args.lyrics_file
+
+# set class list file
+class_list_file = args.class_list_file
 
 # set the number of classes to pick per lyrical line
 classes_per_lyric_line = args.classes_per_lyric_line
@@ -174,7 +178,7 @@ elif args.use_previous_classes == 1:
 elif class_picker == 2:  # sentiment analysis
     image_net_class_picker.load_song_lyrics(lyrics_file)
     classes = image_net_class_picker.get_classes_from_sentiment_analysis(
-        num_classes)
+        num_classes)[:num_classes]
     print("List of classes determined based off sentiment analysis:",
           classes)
 
@@ -187,8 +191,7 @@ elif class_picker == 3:  # contextual similarity
 
 elif class_picker == 4:  # sentiment + contextual
     image_net_class_picker.load_song_lyrics(lyrics_file)
-    sentiment_classes_list = image_net_class_picker.get_classes_from_sentiment_analysis(
-        num_classes)
+    sentiment_classes_list = image_net_class_picker.get_classes_from_sentiment_analysis()
     print("List of classes determined based off sentiment analysis:",
           sentiment_classes_list)
     semantic_classes_list = image_net_class_picker.get_classes_from_semantic_similarity(
@@ -203,6 +206,17 @@ elif class_picker == 4:  # sentiment + contextual
 
     print("List of classes determined based off sentiment analysis & contextual similarity:",
           classes)
+
+    classes = classes[:num_classes]
+
+    print("Final list of classes:", classes)
+
+elif class_picker == 5:
+    classes = [int(x)
+               for x in image_net_class_picker.load_list(class_list_file)]
+    random.shuffle(classes)
+    classes = classes[:num_classes]
+    print("List of loaded classes:", classes)
 
 else:  # select 12 random classes
     cls1000 = list(range(1000))
