@@ -1,13 +1,14 @@
+from pytorch_pretrained_biggan import (BigGAN, truncated_noise_sample)
+from imagenet_class_picker import ImageNetClassPicker
+from tqdm import tqdm
+from scipy.misc import toimage
 import librosa
 import argparse
 import numpy as np
 import moviepy.editor as mpy
 import random
 import torch
-from scipy.misc import toimage
-from tqdm import tqdm
-from imagenet_class_picker import ImageNetClassPicker
-from pytorch_pretrained_biggan import (BigGAN, truncated_noise_sample)
+torch.cuda.empty_cache()
 
 # get input arguments
 parser = argparse.ArgumentParser()
