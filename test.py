@@ -6,7 +6,8 @@ image_net_class_picker.load_imagenet_class_labels(
 image_net_class_picker.load_song_lyrics("green_eyes.txt")
 # print(image_net_class_picker.lyrics)
 # print(image_net_class_picker.image_classes)
-# context_set = set(image_net_class_picker.load_list('34_class_pick.pkl'))
+context_set = set(image_net_class_picker.load_list('34_class_pick.pkl'))
+image_net_class_picker.save_list("test.pkl", list(context_set))
 # print(len(image_net_class_picker.get_classes_from_sentiment_analysis()))
 # print(context_set.intersection(sentiment_set))
 # print("List of classes determined based off contextual similarity: ",

@@ -211,9 +211,9 @@ elif class_picker == 4:  # sentiment + contextual
 
     print("Final list of classes:", classes)
 
-elif class_picker == 5:
-    classes = [int(x)
-               for x in image_net_class_picker.load_list(class_list_file)]
+elif class_picker == 5:  # load in classes from pickle file
+    classes = list(set([int(x)
+                        for x in image_net_class_picker.load_list(class_list_file)]))
     random.shuffle(classes)
     classes = classes[:num_classes]
     print("List of loaded classes:", classes)
@@ -457,6 +457,7 @@ for i in tqdm(range(frame_lim)):
     # empty cuda cache
     torch.cuda.empty_cache()
 
+image_net_class_picker.save_list('frames.pkl', frames)
 
 # Save video
 aud = mpy.AudioFileClip(song, fps=44100)
