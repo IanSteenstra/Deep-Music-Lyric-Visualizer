@@ -187,6 +187,7 @@ elif class_picker == 3:  # contextual similarity
     image_net_class_picker.load_song_lyrics(lyrics_file)
     classes = image_net_class_picker.get_classes_from_semantic_similarity(
         classes_per_lyric_line, num_classes)
+    image_net_class_picker.save_list("stay_classes.txt", classes)
     print("List of classes determined based off contextual similarity:",
           classes)
 
