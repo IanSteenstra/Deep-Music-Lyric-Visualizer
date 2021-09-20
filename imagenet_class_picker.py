@@ -134,7 +134,7 @@ class ImageNetClassPicker:
                     temp_key = key
                     temp_cos_sim = util.pytorch_cos_sim(embedding1, embedding2).item()
 
-            class_indexes.add(temp_key)
+            class_indexes.add(int(temp_key))
 
         if (len(class_indexes) > max_classes):
             return random.sample(class_indexes, max_classes)
