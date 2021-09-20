@@ -104,8 +104,10 @@ class ImageNetClassPicker:
     def load_song_lyrics(self, filename):
         with open(filename) as file:
             for line in file:
-                self.lyrics.append(line.rstrip().replace(
-                    ',', '').replace("'", ''))
+                lyric_line = line.rstrip().replace(
+                    ',', '').replace("'", '')
+                if (lyric_line not in self.lyrics):
+                    self.lyrics.append(lyric_line)
 
     def save_list(self, filename, list_to_save):
         with open(filename, "wb") as file:
